@@ -4,6 +4,7 @@ import Header from './components/Header'
 
 function App() {
   const [solution, setSolution] = useState(null)
+  console.clear()
 
   useEffect( () => {
     fetch('/src/data/words.json')

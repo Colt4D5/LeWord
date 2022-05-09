@@ -3,15 +3,15 @@ import { useState } from 'react';
 const useWordle = solution => {
   const [turn, setTurn] = useState(0)
   const [currentGuess, setCurrentGuess] = useState('')
-  const [prevGuesses, setPrevGuesses] = useState([])
-  const [history, setHistory] = useState([...Array().fill(6)])
+  const [guesses, setGuesses] = useState([...Array(6)])
+  const [history, setHistory] = useState([])
   const [isCorrect, setIsCorrect] = useState(false)
 
   const handleKeyup = e => {
     // submit guess
     if (e.key === 'Enter') {
       if (history.includes(currentGuess)) return console.log(`You've already tried ${currentGuess}.`)
-      submitGuess()
+      formatGuess()
     }
 
     // backspace
@@ -23,11 +23,9 @@ const useWordle = solution => {
     setCurrentGuess( prev => prev += e.key)
   }
 
-  const submitGuess = () => {
+  const formatGuess = () => {
     if (currentGuess.length !== 5) return console.log('Your guess needs to be 5 letters long')
     // console.log(`Submitted ${currentGuess.toUpperCase()}`)
-
-    setHistory( prev => [...prev, currentGuess])
     
     const solutionArr = solution.split('')
     const guessObj = [...currentGuess].map((l, i) => {
@@ -39,25 +37,42 @@ const useWordle = solution => {
     })
     // console.log(solutionArr)
     // console.log(guessObj)
-    const isGreen = guessObj.map((l, i) => {
+    const formattedGuess = guessObj.map((l, i) => {
       if (l.letter === solutionArr[i]) {
         l.color = 'green'
         solutionArr[i] = '_'
-      }
-      return l
-    })
-    
-    const isYellow = isGreen.map( (l, i) => {
-      if (solutionArr.includes(l.letter) && l.color !== 'green') {
+      } else if (solutionArr.includes(l.letter) && l.color !== 'green') {
         l.color = 'yellow'
       }
       return l
     })
-    
-    console.log(history)
+    console.log(formattedGuess);
+
+    setTurn( prev => prev + 1 )
+
+    setHistory( prev => [...prev, currentGuess] )
+
+    submitGuess(formattedGuess)
   }
 
-  return { turn, currentGuess, handleKeyup }
+  const submitGuess = (formattedGuess) => {
+    setGuesses( prev => {
+      let newGuesses = [...prev]
+      newGuesses[turn] = formattedGuess
+      return newGuesses
+    })
+    setCurrentGuess('')
+
+    if (currentGuess === solution) {
+      return console.log(`You win! The word was ${solution}`)
+    }
+
+    if (turn > 5) {
+      return console.log(`You lose... the word was ${solution}`);
+    }
+  }
+
+  return { turn, currentGuess, handleKeyup, guesses }
 
 }
 
